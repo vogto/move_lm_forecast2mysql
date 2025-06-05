@@ -103,7 +103,3 @@ sudo crontab -e
 0 */2 * * * /opt/forecast2mysql/venv/bin/python /opt/forecast2mysql/forecast.py >> /opt/forecast2mysql/forecast_cron.log 2>&1
 
 ```
-
-## 🛟 Lizenz
-
-MIT License
