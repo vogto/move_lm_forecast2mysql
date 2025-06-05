@@ -1,6 +1,7 @@
 import os
 import csv
 from datetime import datetime
+from zoneinfo import ZoneInfo
 from dotenv import load_dotenv
 import mysql.connector
 
@@ -58,7 +59,7 @@ def import_csv_to_mysql(filename):
                 row[8] = row[8].replace(',', '.')
 
             # Aktuelles Datum/Uhrzeit hinzufügen
-            aktuelles_datum = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            aktuelles_datum = datetime.now(ZoneInfo("Europe/Berlin")).strftime('%Y-%m-%d %H:%M:%S')
             row.append(aktuelles_datum)
 
             sql = """
