@@ -79,7 +79,13 @@ LOCAL_PATH=/mnt/forecast_share
 
 ## 💡 forecast.py
 
-Importiert die neueste Datei und aktualisiert `forecast_to_home24`. Fügt jeder Zeile den aktuellen Timestamp hinzu.
+Importiert die neueste Datei und aktualisiert die Tabelle `forecast_to_home24`. Fügt jeder Zeile den aktuellen Timestamp hinzu.
+Speichere folgendes Skript unter `/opt/forecast2mysql/forecast.py` und stelle sicher, dass es ausführbar ist:
+
+```bash
+chmod +x /opt/forecast2mysql/forecast.py
+```
+
 
 ## ▶️ Manuell ausführen
 
