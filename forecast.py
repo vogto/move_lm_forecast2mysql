@@ -4,6 +4,8 @@ from datetime import datetime
 from dotenv import load_dotenv
 import mysql.connector
 
+print(f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] Starte Script ...")
+
 load_dotenv()  # .env laden
 
 LOCAL_PATH = os.getenv("LOCAL_PATH")  # z.B. Netzwerkpfad \\server\pfad
