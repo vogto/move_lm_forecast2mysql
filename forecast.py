@@ -7,9 +7,9 @@ import mysql.connector
 
 print(f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] Starte Script ...")
 
-load_dotenv()  # .env laden
+load_dotenv()
 
-LOCAL_PATH = os.getenv("LOCAL_PATH")  # z.B. Netzwerkpfad \\server\pfad
+LOCAL_PATH = os.getenv("LOCAL_PATH")
 MYSQL_HOST = os.getenv("MYSQL_HOST")
 MYSQL_USER = os.getenv("MYSQL_USER")
 MYSQL_PASSWORD = os.getenv("MYSQL_PASSWORD")
@@ -25,8 +25,10 @@ def get_latest_file():
     print(f"Verwende neueste Datei: {latest_file} (geändert am {datetime.fromtimestamp(os.path.getmtime(latest_file_path))})")
     return latest_file_path
 
-def import_csv_to_mysql(filename):
-    print(f"Lese Datei: {filename}")
+def import_csv_to_mysql(filepath):
+    filename_only = os.path.basename(filepath)
+    print(f"Lese Datei: {filepath}")
+
     connection = mysql.connector.connect(
         host=MYSQL_HOST,
         user=MYSQL_USER,
@@ -35,38 +37,35 @@ def import_csv_to_mysql(filename):
     )
     cursor = connection.cursor()
 
-    # Tabelle leeren vor dem Import
     print("Leere Tabelle forecast_to_home24 ...")
     cursor.execute("TRUNCATE TABLE forecast_to_home24")
 
-    with open(filename, mode='r', encoding='cp1252', newline='') as csvfile:  # encoding korrigiert
+    with open(filepath, mode='r', encoding='cp1252', newline='') as csvfile:
         reader = csv.reader(csvfile, delimiter=';')
-        header = next(reader)  # Header überspringen
+        header = next(reader)
         print(f"Header: {header}")
 
         for row in reader:
-            # Leere letzte Spalte entfernen, falls vorhanden
             if row and row[-1] == '':
                 row = row[:-1]
 
-            # Nur Zeilen mit 11 Spalten verarbeiten
             if len(row) != 11:
                 print(f"Überspringe Zeile mit {len(row)} Spalten: {row}")
                 continue
 
-            # Komma in Dezimalzahlen (Bestellmenge) ersetzen
             if row[8]:
                 row[8] = row[8].replace(',', '.')
 
-            # Aktuelles Datum/Uhrzeit hinzufügen
             aktuelles_datum = datetime.now(ZoneInfo("Europe/Berlin")).strftime('%Y-%m-%d %H:%M:%S')
             row.append(aktuelles_datum)
+            row.append(filename_only)  # Dateiname hinzufügen
 
             sql = """
                 INSERT INTO forecast_to_home24 (
                     ArtikelId, StandortId, LieferantenId, Übertragungsdatum, Bestelldatum,
-                    Lieferdatum, Filialdatum, Verfügbarkeitsdatum, Bestellmenge, Kundenauftrag, Username, Datum
-                ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                    Lieferdatum, Filialdatum, Verfügbarkeitsdatum, Bestellmenge, Kundenauftrag,
+                    Username, Datum, FileName
+                ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
             """
             cursor.execute(sql, row)
 
@@ -77,8 +76,8 @@ def import_csv_to_mysql(filename):
 
 def main():
     try:
-        filename = get_latest_file()
-        import_csv_to_mysql(filename)
+        filepath = get_latest_file()
+        import_csv_to_mysql(filepath)
     except Exception as e:
         print(f"Fehler: {e}")
 

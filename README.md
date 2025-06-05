@@ -94,7 +94,8 @@ sudo crontab -e
 ```
 
 ```cron
-0 6 * * * /opt/forecast2mysql/venv/bin/python /opt/forecast2mysql/forecast.py >> /var/log/forecast_cron.log 2>&1
+0 */2 * * * /opt/forecast2mysql/venv/bin/python /opt/forecast2mysql/forecast.py >> /opt/forecast2mysql/forecast_cron.log 2>&1
+
 ```
 
 ## 🛟 Lizenz
