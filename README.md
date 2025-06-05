@@ -19,7 +19,7 @@ Dieses Projekt automatisiert den täglichen Import der neuesten Forecast-CSV-Dat
 cd /opt/forecast2mysql
 python3 -m venv venv
 source venv/bin/activate
-pip install python-dotenv mysql-connector-python
+pip install python-dotenv mysql-connector-python requests
 ```
 
 ### 2. CIFS für SMB-Zugriff installieren
@@ -75,6 +75,8 @@ MYSQL_USER=dein_user
 MYSQL_PASSWORD=dein_passwort
 MYSQL_DATABASE=deine_datenbank
 LOCAL_PATH=/mnt/forecast_share
+GOOGLE_CHAT_WEBHOOK_URL=https://chat.googleapis.com/v1/spaces/AAA.../messages?key=...&token=...
+
 ```
 
 ## 💡 forecast.py

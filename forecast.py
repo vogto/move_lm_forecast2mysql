@@ -4,6 +4,7 @@ from datetime import datetime
 from zoneinfo import ZoneInfo
 from dotenv import load_dotenv
 import mysql.connector
+import requests
 
 print(f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] Starte Script ...")
 
@@ -14,6 +15,22 @@ MYSQL_HOST = os.getenv("MYSQL_HOST")
 MYSQL_USER = os.getenv("MYSQL_USER")
 MYSQL_PASSWORD = os.getenv("MYSQL_PASSWORD")
 MYSQL_DATABASE = os.getenv("MYSQL_DATABASE")
+
+def send_error_notification(message):
+    webhook_url = os.getenv("GOOGLE_CHAT_WEBHOOK_URL")
+    if webhook_url:
+        payload = {
+            "text": f"❗ *Fehler beim forecast.py-Skript*\n\n```{message}```"
+        }
+        try:
+            response = requests.post(webhook_url, json=payload)
+            if response.status_code != 200:
+                print(f"Fehler beim Senden der Google Chat Nachricht: {response.status_code} - {response.text}")
+        except Exception as e:
+            print(f"Fehler beim Versenden der Benachrichtigung: {e}")
+    else:
+        print("GOOGLE_CHAT_WEBHOOK_URL ist nicht gesetzt.")
+
 
 def get_latest_file():
     files = [f for f in os.listdir(LOCAL_PATH) if f.lower().endswith('.csv')]
@@ -79,7 +96,10 @@ def main():
         filepath = get_latest_file()
         import_csv_to_mysql(filepath)
     except Exception as e:
-        print(f"Fehler: {e}")
+        error_message = f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} - {e}"
+        print(f"Fehler: {error_message}")
+        send_error_notification(error_message)
+
 
 if __name__ == "__main__":
     main()
