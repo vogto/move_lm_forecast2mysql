@@ -95,13 +95,114 @@ chmod +x /opt/forecast2mysql/forecast.py
 /opt/forecast2mysql/venv/bin/python /opt/forecast2mysql/forecast.py
 ```
 
-## ⏰ Tägliche Ausführung via Cron
+## 🧩 Systemd-Service
+
+Um das Skript regelmäßig oder beim Systemstart auszuführen, kann ein `systemd`-Service eingerichtet werden.
+
+### 1. Service-Datei erstellen
 
 ```bash
-sudo crontab -e
+sudo nano /etc/systemd/system/logomate_forecast2mysql.service
 ```
 
-```cron
-0 */2 * * * /opt/forecast2mysql/venv/bin/python /opt/forecast2mysql/forecast.py >> /opt/forecast2mysql/forecast_cron.log 2>&1
+#### Inhalt:
 
+```ini
+[Unit]
+Description=CSV Datei importieren und Daten wegschreiben
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/forecast2mysql/
+ExecStart=/opt/forecast2mysql/venv/bin/python /opt/forecast2mysql/forecast.py
+EnvironmentFile=/opt/forecast2mysql/.env
+StandardOutput=append:/var/log/forecast2mysql.log
+StandardError=append:/var/log/forecast2mysql.log
+
+[Install]
+WantedBy=multi-user.target
+
+```
+
+---
+
+### 2. Service aktivieren und starten
+
+```bash
+sudo systemctl daemon-reexec
+sudo systemctl daemon-reload
+sudo systemctl enable logomate_forecast2mysql.service
+sudo systemctl start logomate_forecast2mysql.service
+```
+
+---
+
+### 3. Service prüfen
+
+Status anzeigen:
+
+```bash
+sudo systemctl status logomate_forecast2mysql.service
+```
+
+Logs live ansehen:
+
+```bash
+journalctl -u logomate_forecast2mysql.service -f
+```
+
+---
+
+
+## ⏰ Optional: systemd-Timer (statt Cronjob)
+
+Du kannst einen systemd-Timer verwenden, um den Export regelmäßig auszuführen (z. B. täglich um 03:00 Uhr).
+
+### 1. Timer-Datei erstellen
+
+```bash
+sudo nano /etc/systemd/system/logomate_forecast2mysql.timer
+```
+
+#### Inhalt:
+
+```ini
+[Unit]
+Description=Timer für Logomate-Forecast-Import alle 2 Stunden
+
+[Timer]
+OnCalendar=0/2:00:00
+Persistent=true
+Unit=logomate_forecast2mysql.service
+
+[Install]
+WantedBy=timers.target
+```
+
+---
+
+### 2. Timer aktivieren und starten
+
+```bash
+sudo systemctl daemon-reload
+sudo systemctl enable --now logomate_forecast2mysql.timer
+
+```
+
+---
+
+### 3. Timer prüfen
+
+Liste aktiver Timer anzeigen:
+
+```bash
+systemctl list-timers
+```
+
+Status eines bestimmten Timers anzeigen:
+
+```bash
+systemctl status logomate_forecast2mysql.timer
 ```
