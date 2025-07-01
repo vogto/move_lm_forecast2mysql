@@ -54,6 +54,7 @@ def import_csv_to_mysql(filepath):
     )
     cursor = connection.cursor()
 
+    # Tabelle nur dann leeren, wenn wir eine gültige Datei haben
     print("Leere Tabelle forecast_to_home24 ...")
     cursor.execute("TRUNCATE TABLE forecast_to_home24")
 
@@ -75,7 +76,7 @@ def import_csv_to_mysql(filepath):
 
             aktuelles_datum = datetime.now(ZoneInfo("Europe/Berlin")).strftime('%Y-%m-%d %H:%M:%S')
             row.append(aktuelles_datum)
-            row.append(filename_only)  # Dateiname hinzufügen
+            row.append(filename_only)
 
             sql = """
                 INSERT INTO forecast_to_home24 (
@@ -94,7 +95,12 @@ def import_csv_to_mysql(filepath):
 def main():
     try:
         filepath = get_latest_file()
-        import_csv_to_mysql(filepath)
+        if filepath:  # Falls du in Zukunft None erlauben willst
+            import_csv_to_mysql(filepath)
+    except FileNotFoundError as e:
+        error_message = f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} - Keine Datei gefunden: {e}"
+        print(f"Fehler: {error_message}")
+        send_error_notification(error_message)
     except Exception as e:
         error_message = f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} - {e}"
         print(f"Fehler: {error_message}")
